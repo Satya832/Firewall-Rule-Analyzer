@@ -78,13 +78,14 @@ These files help simulate real-world firewall auditing scenarios and improve tes
 
 ## 📂 Project Structure
 
+```text
 Firewall-Rule-Analyzer/
 │
 ├── analyzer/
+│   ├── __init__.py
 │   ├── rule_checker.py
 │   ├── risk_scoring.py
-│   ├── report_generator.py
-│   └── **init**.py
+│   └── report_generator.py
 │
 ├── data/
 │   ├── sample_safe_rules.csv
@@ -100,6 +101,8 @@ Firewall-Rule-Analyzer/
 ├── app.py
 ├── requirements.txt
 └── README.md
+```
+
 
 ---
 
