@@ -116,7 +116,7 @@ def generate_pdf_report(score, risk_level, findings_df):
         )
 
     # Save File
-    file_path = "reports/firewall_audit_report.pdf"
+    file_path = "firewall_audit_report.pdf"
     pdf.output(file_path)
 
     return file_path
