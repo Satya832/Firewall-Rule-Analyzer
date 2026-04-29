@@ -1,0 +1,6 @@
+RuleID,SourceIP,DestinationIP,Port,Protocol,Action,Logging,Enabled
+1,192.168.1.10,192.168.1.20,443,TCP,Allow,Yes,Yes
+2,192.168.1.10,192.168.1.20,443,TCP,Allow,Yes,Yes
+3,192.168.1.15,192.168.1.30,80,TCP,Allow,Yes,Yes
+4,192.168.1.15,192.168.1.30,80,TCP,Allow,Yes,Yes
+5,10.0.0.5,10.0.0.10,22,TCP,Allow,Yes,Yes

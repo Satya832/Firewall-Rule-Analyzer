@@ -5,16 +5,16 @@ def check_firewall_rules(df):
     findings = []
 
     dangerous_ports = {
-        21: "FTP",
-        23: "Telnet",
-        22: "SSH",
-        445: "SMB",
-        3389: "RDP",
-        1433: "MSSQL"
+        21: ("FTP", "File Transfer Protocol is outdated and often insecure."),
+        23: ("Telnet", "Telnet sends data in plain text and is highly insecure."),
+        22: ("SSH", "SSH is secure but should be restricted to trusted IPs."),
+        445: ("SMB", "SMB is often targeted in ransomware and lateral movement attacks."),
+        3389: ("RDP", "RDP can expose remote access and is frequently targeted by attackers."),
+        1433: ("MSSQL", "Database ports should never be openly exposed to the internet.")
     }
 
     # Check 1: Any to Any Access
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if (
             str(row["SourceIP"]).strip().lower() == "any"
             and str(row["DestinationIP"]).strip().lower() == "any"
@@ -24,29 +24,34 @@ def check_firewall_rules(df):
                 "RuleID": row["RuleID"],
                 "Issue": "Any to Any Access",
                 "Severity": "Critical",
-                "Recommendation": "Restrict source and destination IP ranges"
+                "Explanation": "Traffic is allowed from any source to any destination without restrictions.",
+                "Recommendation": "Restrict source and destination IP ranges immediately."
             })
 
     # Check 2: Dangerous Open Ports
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         port = int(row["Port"])
 
         if port in dangerous_ports and str(row["Action"]).strip().lower() == "allow":
+            service, explanation = dangerous_ports[port]
+
             findings.append({
                 "RuleID": row["RuleID"],
-                "Issue": f"Dangerous Port Open ({dangerous_ports[port]})",
+                "Issue": f"Dangerous Port Open ({service})",
                 "Severity": "High",
-                "Recommendation": f"Review access for port {port}"
+                "Explanation": explanation,
+                "Recommendation": f"Review and restrict access for port {port}."
             })
 
     # Check 3: Missing Logging
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if str(row["Logging"]).strip().lower() == "no":
             findings.append({
                 "RuleID": row["RuleID"],
                 "Issue": "Logging Disabled",
                 "Severity": "Medium",
-                "Recommendation": "Enable logging for auditing and monitoring"
+                "Explanation": "Without logs, suspicious activities may go unnoticed.",
+                "Recommendation": "Enable logging for auditing and incident investigation."
             })
 
     # Check 4: Duplicate Rules
@@ -55,16 +60,17 @@ def check_firewall_rules(df):
         keep=False
     )]
 
-    for index, row in duplicates.iterrows():
+    for _, row in duplicates.iterrows():
         findings.append({
             "RuleID": row["RuleID"],
             "Issue": "Duplicate Rule",
             "Severity": "Medium",
-            "Recommendation": "Remove unnecessary duplicate rules"
+            "Explanation": "Duplicate rules increase complexity and may create confusion during audits.",
+            "Recommendation": "Remove unnecessary duplicate firewall rules."
         })
 
     # Check 5: Disabled Risky Rules
-    for index, row in df.iterrows():
+    for _, row in df.iterrows():
         if (
             str(row["Enabled"]).strip().lower() == "no"
             and int(row["Port"]) in dangerous_ports
@@ -73,7 +79,8 @@ def check_firewall_rules(df):
                 "RuleID": row["RuleID"],
                 "Issue": "Disabled Risky Rule",
                 "Severity": "Low",
-                "Recommendation": "Review and remove unused risky disabled rules"
+                "Explanation": "Old disabled risky rules should be reviewed and cleaned up.",
+                "Recommendation": "Remove unused risky disabled rules."
             })
 
     return pd.DataFrame(findings)

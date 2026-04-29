@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from analyzer.rule_checker import check_firewall_rules
 from analyzer.risk_scoring import calculate_risk_score
+from analyzer.report_generator import generate_pdf_report
 
 # Page Config
 st.set_page_config(
@@ -24,6 +25,9 @@ st.sidebar.markdown("""
 - Risk Score Dashboard
 - Severity Visualization
 - Downloadable CSV Report
+- Downloadable PDF Audit Report
+- Human-Friendly Recommendations
+- Severity Summary Cards
 """)
 
 st.sidebar.info("Built using Python + Streamlit")
@@ -40,12 +44,41 @@ Upload your firewall policy CSV file and get:
 - Security findings
 - Risk score
 - Severity distribution
-- Downloadable audit report
+- Top recommended actions
+- Downloadable CSV report
+- Downloadable PDF audit report
 """)
 
 st.divider()
 
-# File Upload
+# Sample CSV Download Section
+st.subheader("📁 Download Sample CSV Files")
+
+st.markdown("""
+You can download sample firewall rule CSV files below and upload them to test the analyzer.
+""")
+
+sample_files = {
+    "Download Safe Rules Sample": "data/sample_safe_rules.csv",
+    "Download High Risk Sample": "data/sample_high_risk.csv",
+    "Download Critical Risk Sample": "data/sample_critical_risk.csv",
+    "Download Duplicate Rules Sample": "data/sample_duplicate_rules.csv",
+    "Download Missing Logging Sample": "data/sample_missing_logging.csv",
+    "Download Disabled Risky Rules Sample": "data/sample_disabled_risky_rules.csv"
+}
+
+for label, file_path in sample_files.items():
+    with open(file_path, "rb") as file:
+        st.download_button(
+            label=label,
+            data=file,
+            file_name=file_path.split("/")[-1],
+            mime="text/csv"
+        )
+
+st.divider()
+
+# File Upload Section
 uploaded_file = st.file_uploader(
     "Upload Firewall Rules CSV File",
     type=["csv"]
@@ -56,15 +89,17 @@ if uploaded_file is not None:
 
     st.success("CSV uploaded successfully!")
 
+    # Firewall Rules Preview
     st.subheader("📄 Firewall Rules Preview")
     st.dataframe(df, use_container_width=True)
 
+    # Run Analysis
     findings_df = check_firewall_rules(df)
     score, risk_level = calculate_risk_score(findings_df)
 
     st.divider()
 
-    # Dashboard
+    # Security Dashboard
     st.subheader("📊 Security Dashboard")
 
     col1, col2 = st.columns(2)
@@ -75,10 +110,55 @@ if uploaded_file is not None:
     with col2:
         st.metric("Risk Level", risk_level)
 
+    # Top Recommended Actions
+    if not findings_df.empty:
+        st.subheader("🛠 Top Recommended Actions")
+
+        recommendations = findings_df["Recommendation"].unique()
+
+        for i, rec in enumerate(recommendations[:5], 1):
+            st.write(f"{i}. {rec}")
+
     st.divider()
 
     if not findings_df.empty:
-        # Chart
+
+        # Severity Summary Cards
+        st.subheader("🚦 Severity Summary")
+
+        critical_count = len(
+            findings_df[findings_df["Severity"] == "Critical"]
+        )
+
+        high_count = len(
+            findings_df[findings_df["Severity"] == "High"]
+        )
+
+        medium_count = len(
+            findings_df[findings_df["Severity"] == "Medium"]
+        )
+
+        low_count = len(
+            findings_df[findings_df["Severity"] == "Low"]
+        )
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            st.error(f"🔴 Critical: {critical_count}")
+
+        with c2:
+            st.warning(f"🟠 High: {high_count}")
+
+        with c3:
+            st.info(f"🟡 Medium: {medium_count}")
+
+        with c4:
+            st.success(f"🟢 Low: {low_count}")
+
+        st.divider()
+
+        # Severity Distribution Chart
         st.subheader("📈 Severity Distribution")
 
         severity_counts = findings_df["Severity"].value_counts()
@@ -102,25 +182,51 @@ if uploaded_file is not None:
         st.subheader("🚨 Security Findings Report")
 
         st.dataframe(findings_df, use_container_width=True)
-        st.warning(f"Total Issues Found: {len(findings_df)}")
 
-        # Download Button
-        csv = findings_df.to_csv(index=False).encode("utf-8")
+        st.warning(
+            f"Total Issues Found: {len(findings_df)}"
+        )
+
+        # CSV Download Button
+        csv = findings_df.to_csv(
+            index=False
+        ).encode("utf-8")
 
         st.download_button(
-            label="⬇ Download Security Report",
+            label="⬇ Download CSV Security Report",
             data=csv,
             file_name="security_findings_report.csv",
             mime="text/csv"
         )
 
+        # PDF Download Button
+        pdf_path = generate_pdf_report(
+            score,
+            risk_level,
+            findings_df
+        )
+
+        with open(pdf_path, "rb") as pdf_file:
+            st.download_button(
+                label="📄 Download PDF Audit Report",
+                data=pdf_file,
+                file_name="firewall_audit_report.pdf",
+                mime="application/pdf"
+            )
+
     else:
-        st.success("No security issues found. Firewall looks secure!")
+        st.success(
+            "No security issues found. Firewall looks secure!"
+        )
 
 else:
-    st.info("Please upload a CSV file to begin analysis.")
+    st.info(
+        "Please upload a CSV file to begin analysis."
+    )
 
 st.divider()
 
 # Footer
-st.caption("Developed By Satyabrata Behera | Firewall Rule Analyzer v1.0")
+st.caption(
+    "Developed By Satyabrata Behera | Firewall Rule Analyzer v1.0"
+)

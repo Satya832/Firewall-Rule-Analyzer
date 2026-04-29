@@ -1,0 +1,7 @@
+RuleID,SourceIP,DestinationIP,Port,Protocol,Action,Logging,Enabled
+1,Any,Any,23,TCP,Allow,No,Yes
+2,Any,Any,3389,TCP,Allow,No,Yes
+3,Any,Any,445,TCP,Allow,No,Yes
+4,Any,Any,21,TCP,Allow,No,Yes
+5,Any,Any,1433,TCP,Allow,No,No
+6,Any,Any,22,TCP,Allow,No,Yes

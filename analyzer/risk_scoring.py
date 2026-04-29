@@ -8,20 +8,29 @@ def calculate_risk_score(findings_df):
         "Low": 4
     }
 
+    counted_issues = set()
+
     for _, row in findings_df.iterrows():
+        issue = row["Issue"]
         severity = row["Severity"]
 
-        if severity in severity_weights:
-            score -= severity_weights[severity]
+        # Prevent same issue type from over-penalizing
+        if issue not in counted_issues:
+            if severity in severity_weights:
+                score -= severity_weights[severity]
+
+            counted_issues.add(issue)
 
     if score < 0:
         score = 0
 
     if score >= 80:
         risk_level = "LOW RISK"
-    elif score >= 50:
+    elif score >= 60:
         risk_level = "MEDIUM RISK"
-    else:
+    elif score >= 40:
         risk_level = "HIGH RISK"
+    else:
+        risk_level = "CRITICAL RISK"
 
     return score, risk_level
