@@ -14,6 +14,7 @@ st.set_page_config(
 
 # Sidebar
 st.sidebar.title("🛡️ Firewall Rule Analyzer")
+
 st.sidebar.markdown("""
 ### Features
 
@@ -28,6 +29,37 @@ st.sidebar.markdown("""
 - Downloadable PDF Audit Report
 - Human-Friendly Recommendations
 - Severity Summary Cards
+""")
+
+# Sample Files in Sidebar
+st.sidebar.markdown("## 📁 Sample CSV Files")
+
+sample_files = {
+    "⬇ Safe Rules": "data/sample_safe_rules.csv",
+    "⬇ High Risk": "data/sample_high_risk.csv",
+    "⬇ Critical Risk": "data/sample_critical_risk.csv",
+    "⬇ Duplicate Rules": "data/sample_duplicate_rules.csv",
+    "⬇ Missing Logging": "data/sample_missing_logging.csv",
+    "⬇ Disabled Risky Rules": "data/sample_disabled_risky_rules.csv"
+}
+
+for label, file_path in sample_files.items():
+    with open(file_path, "rb") as file:
+        st.sidebar.download_button(
+            label=label,
+            data=file,
+            file_name=file_path.split("/")[-1],
+            mime="text/csv"
+        )
+
+# Security Score Guide
+st.sidebar.markdown("## 📊 Security Score Guide")
+
+st.sidebar.markdown("""
+- **80–100** → Low Risk  
+- **60–79** → Medium Risk  
+- **40–59** → High Risk  
+- **0–39** → Critical Risk
 """)
 
 st.sidebar.info("Built using Python + Streamlit")
@@ -48,33 +80,6 @@ Upload your firewall policy CSV file and get:
 - Downloadable CSV report
 - Downloadable PDF audit report
 """)
-
-st.divider()
-
-# Sample CSV Download Section
-st.subheader("📁 Download Sample CSV Files")
-
-st.markdown("""
-You can download sample firewall rule CSV files below and upload them to test the analyzer.
-""")
-
-sample_files = {
-    "Download Safe Rules Sample": "data/sample_safe_rules.csv",
-    "Download High Risk Sample": "data/sample_high_risk.csv",
-    "Download Critical Risk Sample": "data/sample_critical_risk.csv",
-    "Download Duplicate Rules Sample": "data/sample_duplicate_rules.csv",
-    "Download Missing Logging Sample": "data/sample_missing_logging.csv",
-    "Download Disabled Risky Rules Sample": "data/sample_disabled_risky_rules.csv"
-}
-
-for label, file_path in sample_files.items():
-    with open(file_path, "rb") as file:
-        st.download_button(
-            label=label,
-            data=file,
-            file_name=file_path.split("/")[-1],
-            mime="text/csv"
-        )
 
 st.divider()
 
